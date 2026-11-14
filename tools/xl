@@ -1,10 +1,12 @@
 #!/bin/bash
-# xl_x6826b — drive the XNU loader on Infinix Hot 20 (X6826B) over USB (macOS compatible).
-# Bound to one phone: the one whose serial is in HAKIOS_SERIAL (adb devices).
+# xl — drive the XNU loader on Redmi 10 (selene) over USB.
+# Bound to target device: HAKIOS_SERIAL (adb devices).
 
+BOARD="${BOARD:-selene}"
 DEVICE="${HAKIOS_SERIAL:?set HAKIOS_SERIAL to the serial of your phone, as adb devices shows it}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
-cd "$HERE"
+ROOT="$(cd "$HERE/.." && pwd)"
+cd "$ROOT"
 
 K=xnu-src/xnu-8796.121.2/BUILD/obj/DEVELOPMENT_ARM64_BCM2837/mach.development.bcm2837
 [ -f "$K" ] || K=prebuilt/mach.development.bcm2837
@@ -38,21 +40,21 @@ enter_fastboot() {
 	case "$(state)" in
 		fastboot) return 0 ;;
 		android)
-			echo "xl_x6826b: rebooting to bootloader..."
+			echo "xl ($BOARD): rebooting to bootloader..."
 			adb_cmd reboot bootloader
-			wait_for fastboot 45 || { echo "xl_x6826b: device did not reach fastboot"; return 1; }
+			wait_for fastboot 45 || { echo "xl ($BOARD): device did not reach fastboot"; return 1; }
 			;;
 		absent)
-			echo "xl_x6826b: device $DEVICE not detected (check USB cable/authorization)"
+			echo "xl ($BOARD): device $DEVICE not detected (check USB cable/authorization)"
 			return 1
 			;;
 	esac
 }
 
 boot_image() {
-	local img="${1:-xnu-x6826b.img}"
+	local img="${1:-xnu-$BOARD.img}"
 	enter_fastboot || return 1
-	echo "xl_x6826b: booting $img via fastboot boot..."
+	echo "xl ($BOARD): booting $img via fastboot boot..."
 	fb_cmd boot "$img"
 }
 
@@ -60,25 +62,31 @@ reboot_android() {
 	case "$(state)" in
 		fastboot) fb_cmd reboot ;;
 		android) adb_cmd reboot ;;
-		absent) echo "xl_x6826b: device not found" ;;
+		absent) echo "xl ($BOARD): device not found" ;;
 	esac
 }
 
 build_payload_and_img() {
-	local rd="${XL_RAMDISK:-userland/root.packfs}"
+	local rd="${XL_RAMDISK:-userland/root.apfs}"
 	local cmd="${XL_CMDLINE:- -v}"
 	local payload_args="loader.efi=$L kernel=$K"
 	if [ -f "$rd" ]; then
 		payload_args="$payload_args ramdisk=$rd"
 	fi
-	echo "xl_x6826b: creating payload with $payload_args (cmdline: '$cmd')..."
+	echo "xl ($BOARD): building mtkloader..."
+	"$ROOT/mtkloader/build.sh"
+	echo "xl ($BOARD): creating payload with $payload_args (cmdline: '$cmd')..."
 	python3 xnuloader/mkpayload.py -o build-payload.bin $payload_args --cmdline="$cmd"
-	python3 mkxnuimg_x6826b.py -p build-payload.bin -o xnu-x6826b.img
+	if [ -f "$ROOT/mkxnuimg_selene.py" ]; then
+		python3 "$ROOT/mkxnuimg_selene.py" -p build-payload.bin -o "xnu-$BOARD.img"
+	else
+		python3 "$ROOT/tools/chainboot.py" "$ROOT/fw-selene/boot_a.img" "$ROOT/mtkloader/mtkloader.bin" "xnu-$BOARD.img" build-payload.bin --partition-size 64M
+	fi
 }
 
 case "$1" in
 	state)
-		echo "Device: $DEVICE | State: $(state)"
+		echo "Device: $DEVICE | Board: $BOARD | State: $(state)"
 		;;
 	enter)
 		enter_fastboot
@@ -92,7 +100,7 @@ case "$1" in
 	boot)
 		shift
 		build_payload_and_img
-		boot_image "xnu-x6826b.img"
+		boot_image "xnu-$BOARD.img"
 		;;
 	*)
 		echo "Usage: $0 {state|enter|build|boot|reboot}"

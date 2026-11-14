@@ -1,0 +1,5 @@
+# HakiOS defconfig for the Redmi 10 family (selene, MediaTek MT6769H): the common kernel's configuration,
+# the MT6769's facts and drivers (mtk/mt6768/configs/mt6768.config) and this phone's own.
+#include common_defconfig
+#include mt6768.config
+#include selene.config

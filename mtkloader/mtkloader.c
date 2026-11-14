@@ -14,8 +14,11 @@
  * The log ends up in /sys/fs/pstore/console-ramoops-0 under Android. See mtkdbg.h for the
  * screen and ramoops output.
  *
- * Display: the panel is video mode and keeps scanning OVL0 layer 0 (LK's framebuffer,
- * 0x787b0000, pitch 2944 = 736 pixels). LK enables per-pixel alpha on that layer, and XNU's
+ * Which phone this is comes from board.h: one row per board, and building with nothing defined
+ * gives the X6826B, unchanged.
+ *
+ * Display: the panel is video mode and keeps scanning OVL0 layer 0 (LK's framebuffer; where it
+ * is, and the pitch, are the board's -- mtkdbg.h). LK enables per-pixel alpha on that layer, and XNU's
  * console writes 0x00rrggbb pixels: fully transparent. So per-pixel alpha is switched off, and
  * XNU's color table gets alpha 0xff besides.
  */
@@ -24,17 +27,22 @@
 #include "mtkdbg.h"
 #include "msdc.h"
 #include "mtkspi.h"
-#include "tcm.h"
+#if BOARD_TOUCH_TCM
+#include "tcm.h"             /* and with it touchfw.h: a TCM board's firmware, and nobody else's */
+#endif
 #include "../xnuloader/identity.h"
 
-/* XNU's view of memory: one contiguous range that nothing else (LK, Android, TEE, ATF, the
- * framebuffer) uses; 0xc0000000-0xfe000000 is free DRAM on this board. */
-#define XNU_PHYS_BASE       0xc0000000ULL
-#define XNU_MEM_SIZE        0xfe000000ULL       /* up to dramc-rk1 at 0x1bffff000; room for the system image */
+/*
+ * XNU's view of memory: one contiguous range that nothing else (LK, Android, TEE, ATF, the
+ * framebuffer) uses. Which range, and how big, is the board's -- board.h (0xc0000000-0xfe000000
+ * on the Infinix, 0x100000000-0xbff00000 on the Redmi), and I cannot describe a hole inside it.
+ */
+#define XNU_PHYS_BASE       BOARD_XNU_PHYS_BASE
+#define XNU_MEM_SIZE        BOARD_XNU_MEM_SIZE
 /* Where the system image is put, clear of the kernel, as xnuloader does it (RESIDENT_RD_OFFSET). */
 #define SYSTEM_PA           (XNU_PHYS_BASE + 0x08000000ULL)
 #define SYSTEM_PART         "xnusys"
-/* 0: all of it. Smaller is for trying the path out: packfs will not mount a half image. */
+/* 0: all of it. Smaller is for trying the path out: a half image will not mount. */
 #ifndef SYSTEM_MAX_MB
 #define SYSTEM_MAX_MB       0
 #endif
@@ -114,12 +122,13 @@ static const uint8_t core_order[8] = { 0, 7, 6, 1, 2, 3, 4, 5 };
 #define XNU_VERBOSE         0
 #endif
 /* More for the kernel's command line: cores, the clock (epoch=), whatever a run wants to try. */
-/* The serial number iOS is told (the device tree's serial-number): a placeholder, not any real device's. */
-#ifndef XNU_SERIAL
-#define XNU_SERIAL          "HAKIOS0000000000"
-#endif
 #ifndef XNU_EXTRA_ARGS
 #define XNU_EXTRA_ARGS      "cpus=1"
+#endif
+/* The serial number iOS is told (the device tree's serial-number): a placeholder, not any real device's.
+ * A real build sets its own with -DXNU_SERIAL=..., which is never committed. */
+#ifndef XNU_SERIAL
+#define XNU_SERIAL          "HAKIOS0000000000"
 #endif
 /*
  * 1: the system image stays on the eMMC and the kernel reads it as it needs it (emmc_root=1,
@@ -540,9 +549,9 @@ static uint64_t kva_to_pa(uint64_t va)
 /* ---- the system image, on the flash ---- */
 
 /*
- * userland/system.packfs is the root XNU mounts (md0), 2.8 GB of it: too large for a boot image,
+ * userland/system.apfs is the root XNU mounts (md0), 2.6 GB of it: too large for a boot image,
  * so it lives in its own partition (tools/gpt-carve.py made "xnusys" out of the end of userdata)
- * and is read into DRAM here. The payload's small root.packfs stays the second disk (md1).
+ * and is read into DRAM here. The payload's small root.apfs stays the second disk (md1).
  */
 static uint8_t gpt_entries[128 * 128] __attribute__((aligned(16)));
 static uint8_t sector_buf[512] __attribute__((aligned(16)));
@@ -570,7 +579,7 @@ static int gpt_find(const char *name, uint64_t *lba, uint64_t *blocks)
 		const uint8_t *e = gpt_entries + i * size;
 		int same = 1;
 
-		for (int k = 0; same && name[k - (k ? 0 : 0)] != 0; k++) {
+		for (int k = 0; same && name[k] != 0; k++) {
 			same = e[56 + 2 * k] == (uint8_t)name[k] && e[57 + 2 * k] == 0;
 		}
 		if (same && e[56 + 2 * (int)strlen(name)] == 0) {
@@ -833,12 +842,12 @@ static uint32_t build_device_tree(uint64_t dt_pa, uint64_t rd_pa, uint64_t rd_si
 	dt_prop_u32(&w, "#size-cells", 2);
 
 	dt_begin(&w, "chosen");
-	dt_prop_str(&w, "darwin-board", "x6826b");
+	dt_prop_str(&w, "darwin-board", BOARD_NAME);
 	dt_prop(&w, "random-seed", seed, sizeof(seed));
 	dt_prop_u64(&w, "dram-base", XNU_PHYS_BASE);
 	dt_prop_u64(&w, "dram-size", XNU_MEM_SIZE);
 	dt_prop_u32(&w, "debug-enabled", 1);
-	dt_prop_u32(&w, "display-scale", 2);
+	dt_prop_u32(&w, "display-scale", BOARD_DISPLAY_SCALE);
 	dt_prop_u32(&w, "display-rotation", 0);
 	dt_prop_str(&w, "psci-method", "smc");
 	static const uint8_t wifi_address[6] = { 0x02, 0x52, 0x44, 0x57, 0x00, 0x01 };
@@ -931,7 +940,7 @@ static uint32_t build_device_tree(uint64_t dt_pa, uint64_t rd_pa, uint64_t rd_si
 	dt_end(&w);
 
 	dt_begin(&w, "arm-io");
-	dt_prop_str(&w, "device_type", "x6826b");
+	dt_prop_str(&w, "device_type", BOARD_NAME);
 	uint64_t ranges[3] = { 0, 0x0c000000, 0x14000000 };
 	dt_prop(&w, "ranges", ranges, sizeof(ranges));
 	dt_prop_u32(&w, "#address-cells", 2);
@@ -1969,6 +1978,8 @@ static uint32_t cpu_mhz(void)
 
 /* ---- the touch screen, before the kernel wants it ---- */
 
+#if BOARD_TOUCH_TCM
+
 /*
  * Room for the firmware and the fourteen header bytes in front of it: plain DRAM that nothing
  * else wants. The loader's image ends before 0x400c0000, XNU's log ring sits at 0x47b1c9c0 and
@@ -2087,6 +2098,24 @@ static uint8_t touch_bring_up(void)
 	return 0;
 }
 
+#else /* !BOARD_TOUCH_TCM */
+
+/*
+ * The Redmi's part is a Novatek NT36672C on SPI0: another protocol, its own firmware, and a
+ * sequence that sends it that is not written yet (docs/porting-mt6769-redmi.md). Saying so is all
+ * of this board's touch bring-up, and it says it in the log, where the first run's answer has to
+ * be -- nothing of the TCM code above runs, and nothing of the TD4160's firmware goes near it.
+ */
+static uint8_t touch_bring_up(void)
+{
+	out("touch: " BOARD_TOUCH_NAME " on ");
+	out_hex((uint32_t)BOARD_TOUCH_SPI_BASE);
+	out(": nothing brought up, its sequence is not written\n");
+	return 0;
+}
+
+#endif /* BOARD_TOUCH_TCM */
+
 /* ---- the big cores' clock ---- */
 
 /*
@@ -2101,7 +2130,8 @@ static uint8_t touch_bring_up(void)
  */
 #define APMIXED_BASE        0x1000c000ULL
 #define ARMPLL_CON1         0x20c
-#define BIG_MHZ             1176u
+/* The X6826B's 1176 at 800 mV, the Redmi's 2000 on a Helio G88: board.h. */
+#define BIG_MHZ             BOARD_BIG_MHZ
 
 static void big_cores_clock(void)
 {
@@ -2310,8 +2340,8 @@ static void __attribute__((noreturn)) run_xnu(void)
 
 	out("md0 ");
 	out_hex(sys_size ? sys_pa : rd_pa);
-	out(sys_size ? " (the system image), md1 " : XNU_ROOT_EMMC ? " is none: md1 (root.packfs), the system image on the eMMC" :
-	    " (root.packfs only)");
+	out(sys_size ? " (the system image), md1 " : XNU_ROOT_EMMC ? " is none: md1 (root.apfs), the system image on the eMMC" :
+	    " (root.apfs only)");
 	if (sys_size) {
 		out_hex(rd_pa);
 	}

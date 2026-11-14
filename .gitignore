@@ -30,3 +30,4 @@ mtkloader/*.img
 *.dylib
 __pycache__/
 .DS_Store
+xnuloader
