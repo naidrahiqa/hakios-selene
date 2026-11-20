@@ -53,3 +53,34 @@ No generated binary, firmware, IPSW extract or run log was deleted.
 
 Only `boot_a` and `xnusys` may be written; always pass `-s 65cb03c00702`.
 Never run `adb`/`fastboot`/USB commands against the OPPO hotspot device.
+
+## Flash image source and backup (21 November 2026)
+
+The boot image to flash was packed from the owner's own **ColorOS 16 boot backup**,
+`ColorOS16_Selene_20261119.boot.img` (dated 2026-11-19, kept outside this repo in the
+ColorOS project tree: `$HOME/Projects/ColorOS/COS16_Selene/`). It is a 64 MiB Android
+boot image, header v2, page 2048, kernel 11,624,783 B, ramdisk 34,568,566 B — the
+`chainboot.py` v2 path applies unchanged.
+
+Packed output (workspace root, not tracked):
+`$HOME/Projects/IOS/xnu-selene-boot_a-ColorOS16-20261119.img` — **52,207,616 bytes**
+(program 35,936, Android Image 30,052,191, XNU payload 19,870,480, gz kernel
+17,494,934), inside the 64 MiB `boot_a` limit with ~11.9 MiB headroom.
+
+Flash (only `boot_a`, explicit serial, no `fastboot boot` support on this phone):
+```sh
+fastboot -s 65cb03c00702 flash boot_a \
+  $HOME/Projects/IOS/xnu-selene-boot_a-ColorOS16-20261119.img
+fastboot -s 65cb03c00702 reboot
+```
+
+Restore the owner's ColorOS 16 boot image (reversible):
+```sh
+fastboot -s 65cb03c00702 flash boot_a \
+  $HOME/Projects/ColorOS/COS16_Selene/ColorOS16_Selene_20261119.boot.img
+fastboot -s 65cb03c00702 reboot
+```
+
+Do **not** run `fastboot flashing unlock` (wipes `userdata`), `-w`, `erase`, or flash
+anything except `boot_a`. Check `fastboot -s 65cb03c00702 getvar current-slot` first:
+if the active slot is B, `boot_a` is not used until the slot changes.
