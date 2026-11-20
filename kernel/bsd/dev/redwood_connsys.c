@@ -1,5 +1,5 @@
 /*
- * CONNSYS, the Wi-Fi/Bluetooth/GPS subsystem of the Infinix Hot 20's MT6768 (with the MT6631 radio):
+ * CONNSYS, the Wi-Fi/Bluetooth/GPS subsystem of the Xiaomi Redmi 10 (selene)'s MT6768 (with the MT6631 radio):
  * docs/wifi-x6826b.md. Steps 1 and 2 read only; 3 and 4 write (the PMIC's supplies, then the power domain).
  *
  * The addresses are the ones Android's device tree gives MediaTek's driver for this SoC

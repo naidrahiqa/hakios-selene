@@ -12,11 +12,12 @@
 #define BOARD_NAME             "selene"
 
 /*
- * XNU's memory: 0x100000000-0x1bfff5fff is System RAM in the phone's own /proc/iomem with no
- * reserved region inside it -- 3 GiB.
+ * XNU's memory: 0xc0000000 to 0xfe000000 (992 MiB) is contiguous System RAM
+ * below the 0xfeff6000 reserved region (from selene's /proc/iomem).
+ * 32-bit PA (< 4 GiB) -- the iPhone X (A11) kernel the project boots uses 32-bit physical addresses.
  */
-#define BOARD_XNU_PHYS_BASE    0x100000000ULL
-#define BOARD_XNU_MEM_SIZE     0xbff00000ULL
+#define BOARD_XNU_PHYS_BASE    0xc0000000ULL
+#define BOARD_XNU_MEM_SIZE     0x3e000000ULL   /* 992 MiB safe window */
 
 /* 1080x2400, NT36672C, video mode. LK's framebuffer is at 0x7e605000, 24 MB (vramSize 0x17e8000). */
 #define BOARD_PANEL_W          1080u
@@ -28,13 +29,10 @@
 
 /*
  * Touch: Novatek NT36672C on SPI0 (0x1100a000, "mediatek,mt6765-spi", cs 0, 9.6 MHz), reset on
- * GPIO 92, interrupt on GPIO 1. The SPI pins are 25-28 at function 2.
- */
+ * For the Novatek NT36672C, where the touch report comes from. */
 #define BOARD_TOUCH_TCM        0
 #define BOARD_TOUCH_NAME       "novatek nt36672c"
 #define BOARD_TOUCH_SPI_BASE   0x1100a000ULL
-#define BOARD_TOUCH_RESET_GPIO 92u
-#define BOARD_TOUCH_IRQ_GPIO   1u
 
 /* Cortex-A75 at 2000 MHz (Helio G88) */
 #define BOARD_BIG_MHZ          2000u

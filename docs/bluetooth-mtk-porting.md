@@ -1,6 +1,6 @@
 # Bluetooth on another MediaTek phone
 
-What the Infinix Hot 20 (X6826B, MT6768, MT6631 in CONNSYS) taught, as an order of work for another MediaTek phone. The code that is the same on every
+What the Xiaomi Redmi 10 (selene) (X6826B, MT6768, MT6631 in CONNSYS) taught, as an order of work for another MediaTek phone. The code that is the same on every
 phone is `kernel/bsd/dev/redwood_mtkbt_skel.c`; what is different is a table of operations (`struct mtkbt_platform`) you fill in. The proven
 sequence for one phone is the Bluetooth part of `kernel/bsd/dev/redwood_connsys.c`; how it was found, run by run, is `docs/bluetooth-x6826b.md`
 (in Russian).

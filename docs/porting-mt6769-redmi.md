@@ -128,7 +128,7 @@ One branch per board that is **actually a different board**, off `mtk` -- not on
 
 | branch | for | what it adds over `mtk` |
 | --- | --- | --- |
-| `mtk` | the Infinix X6826B, and everything shared | -- |
+| `mtk` | the Redmi X6826B, and everything shared | -- |
 | `mtk-selene` | selene **and** selenes: Redmi 10, 10 Prime, Redmi 10 2022, Note 11 4G, 10 Prime 2022 | the measured board facts above. One branch, because they are one board: same SoC, same panel family, same Novatek part, same partitions. A unit that turns out to differ gets its own branch **then**, with the measurement that shows it |
 | `mtk-eos` | selene for China | selene's, plus **NFC** (`mediatek,nfc`, i2c3 0x1100f000 @0x08) and its driver -- the one thing that genuinely separates it |
 

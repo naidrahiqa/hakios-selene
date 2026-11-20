@@ -5,7 +5,7 @@ and the rules that are not obvious from the code. Read it before changing anythi
 
 ## What this is
 
-HakiOS for the **Infinix Hot 20 (X6826B)**: MediaTek Helio G85 (MT6768), Mali-G52 MC2, eMMC, 6 GB of RAM (the kernel is given 4).
+HakiOS for the **Xiaomi Redmi 10 (selene) (X6826B)**: MediaTek Helio G85 (MT6768), Mali-G52 MC2, eMMC, 6 GB of RAM (the kernel is given 4).
 Apple's open XNU kernel (xnu-8796.121.2) and iOS 16.5's unmodified user space, started by this
 phone's own loader. This is the device repository; the shared kernel, user space and Metal driver
 live in the organisation's common repositories (`hakios-xnu-kernel`, `hakios-metal`). Every other

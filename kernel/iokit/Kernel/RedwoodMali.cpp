@@ -1,5 +1,5 @@
 /*
- * RedwoodMali: the Infinix's Mali-G52 for programs to draw with.
+ * RedwoodMali: the Redmi's Mali-G52 for programs to draw with.
  *
  * bsd/dev/redwood_mali.c brings the GPU up (boot-arg mali=1) and, once a job has run through its
  * page tables, starts this service. A program that opens it speaks the interface of Linux's

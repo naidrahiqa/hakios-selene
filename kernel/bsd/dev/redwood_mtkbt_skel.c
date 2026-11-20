@@ -1,5 +1,5 @@
 /*
- * Bluetooth on a MediaTek phone: the skeleton. It is the part of redwood_connsys.c's Bluetooth (the Infinix Hot 20's working driver, MT6768 with
+ * Bluetooth on a MediaTek phone: the skeleton. It is the part of redwood_connsys.c's Bluetooth (the Xiaomi Redmi 10 (selene)'s working driver, MT6768 with
  * an MT6631 in CONNSYS; docs/bluetooth-x6826b.md) that does not depend on the phone: what iOS 16.5's bluetoothd needs from a kernel to take a
  * controller as its own -- the kernel control com.apple.uart.sk.bluetooth and the Skywalk kernel pipe behind it (redwood_btsk.c), the nodes it
  * opens, the service "bluetooth" in the registry (iokit/Kernel/RedwoodBluetooth.cpp), H4 framing of what it writes, and the answers of a
@@ -86,7 +86,7 @@ struct mtkbt_platform {
 	 * less than 0 for an error. Never half a packet and never two; what is not Bluetooth's (another STP channel) is not returned.
 	 */
 	int     (*receive)(uint8_t *h4, unsigned room, unsigned wait_ms);
-	/* optional: called before each send, for a transport that sleeps (BTIF's wake on the Infinix) */
+	/* optional: called before each send, for a transport that sleeps (BTIF's wake on the Redmi) */
 	void    (*wake)(void);
 	/*
 	 * optional: the Wi-Fi radio's address, six bytes, for the registry's local-mac-address (the Bluetooth one is made of it, last byte + 1).
@@ -98,7 +98,7 @@ struct mtkbt_platform {
 
 /*
  * ---- THE PORT: fill this in ----
- * Nothing is assumed. For the Infinix Hot 20 each of these is a part of redwood_connsys.c: connsys_sw_init and the steps before it (power_on),
+ * Nothing is assumed. For the Xiaomi Redmi 10 (selene) each of these is a part of redwood_connsys.c: connsys_sw_init and the steps before it (power_on),
  * connsys_bt_start's WMT_FUNC_CTRL (function_on), connsys_stp_send and connsys_stp_receive on channel 0 (send, receive), connsys_btif_wake (wake).
  */
 static const struct mtkbt_platform mtkbt_platform = {

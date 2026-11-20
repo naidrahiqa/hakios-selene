@@ -1,5 +1,5 @@
 /*
- * The GPU of the Infinix Hot 20 (X6826B), a Mali-G52 MC2, brought up from the kernel. Only with
+ * The GPU of the Xiaomi Redmi 10 (selene) (X6826B), a Mali-G52 MC2, brought up from the kernel. Only with
  * boot-arg mali=1: every address below belongs to this phone (the other phone's GPU is an Adreno,
  * bsd/dev/redwood_adreno.c).
  *

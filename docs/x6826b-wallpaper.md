@@ -1,4 +1,4 @@
-# The system wallpaper on the Infinix (X6826B)
+# The system wallpaper on the Redmi (X6826B)
 
 iOS draws its own wallpaper here since run 273 (27 October 2026): PosterBoard and its poster
 extensions run, CollectionsPoster draws the iOS 16 wallpaper (7400, WWDC 2022) with all its layers,

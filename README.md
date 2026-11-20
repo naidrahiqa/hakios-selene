@@ -2,7 +2,7 @@
 
 English · [Русский](README.ru.md)
 
-HakiOS for the **Infinix Hot 20 (X6826B)**: MediaTek Helio G85 (**MT6768**), GPU **Mali-G52 MC2**, eMMC.
+HakiOS for the **Xiaomi Redmi 10 (selene) (X6826B)**: MediaTek Helio G85 (**MT6768**), GPU **Mali-G52 MC2**, eMMC.
 iOS 16.5's own user space (launchd → backboardd → SpringBoard → apps) on Apple's open XNU kernel
 (xnu-8796.121.2), with this phone's own loader and drivers. The first MediaTek phone of the project;
 everything else in the organisation is Qualcomm.
@@ -56,7 +56,7 @@ your Mac.
 ## Running
 
 In the common tree, the branch `mtk` (what it needs:
-- an Infinix Hot 20 (X6826B) with an unlocked bootloader, rooted Android (Magisk), its stock
+- an Xiaomi Redmi 10 (selene) (X6826B) with an unlocked bootloader, rooted Android (Magisk), its stock
   `boot_a` image saved (`backup/boot_a_magisk.img` at the top of the tree);
 - a Mac, your own Darwin userland 16.5 IPSW (for `xnuloader/identity.h`)).
 

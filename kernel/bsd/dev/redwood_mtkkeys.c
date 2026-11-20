@@ -1,5 +1,5 @@
 /*
- * The buttons of the Infinix Hot 20 (X6826B), as a source of button presses for
+ * The buttons of the Xiaomi Redmi 10 (selene) (X6826B), as a source of button presses for
  * /dev/redwood-touch (sys/redwood_input.h). Only with boot-arg buttons=2: every address below
  * belongs to this phone; buttons=1 is the other phone's, in redwood_buttons.c.
  *

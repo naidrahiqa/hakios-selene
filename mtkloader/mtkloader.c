@@ -1,5 +1,5 @@
 /*
- * mtkloader: boots XNU on the Infinix Hot 20 (X6826B, MT6768) from boot_a, and brings Android
+ * mtkloader: boots XNU on the Xiaomi Redmi 10 (selene, MT6769H) from boot_a, and brings Android
  * back afterwards with XNU's log in pstore.
  *
  * The boot image's kernel (tools/chainboot.py) is this program, then Android's own kernel Image
@@ -14,8 +14,8 @@
  * The log ends up in /sys/fs/pstore/console-ramoops-0 under Android. See mtkdbg.h for the
  * screen and ramoops output.
  *
- * Which phone this is comes from board.h: one row per board, and building with nothing defined
- * gives the X6826B, unchanged.
+ * Which phone this is comes from board.h: the board is the Redmi 10 family, and every hardware
+ * constant in the loader goes back to it.
  *
  * Display: the panel is video mode and keeps scanning OVL0 layer 0 (LK's framebuffer; where it
  * is, and the pitch, are the board's -- mtkdbg.h). LK enables per-pixel alpha on that layer, and XNU's
@@ -34,8 +34,9 @@
 
 /*
  * XNU's view of memory: one contiguous range that nothing else (LK, Android, TEE, ATF, the
- * framebuffer) uses. Which range, and how big, is the board's -- board.h (0xc0000000-0xfe000000
- * on the Infinix, 0x100000000-0xbff00000 on the Redmi), and I cannot describe a hole inside it.
+ * framebuffer) uses. Which range, and how big, is the board's -- board.h (0xc0000000, 992 MiB,
+ * clear of the reserved 0xfeff6000 region selene's /proc/iomem shows), and I cannot describe a hole
+ * inside it.
  */
 #define XNU_PHYS_BASE       BOARD_XNU_PHYS_BASE
 #define XNU_MEM_SIZE        BOARD_XNU_MEM_SIZE
@@ -392,7 +393,6 @@ static void out_dec(uint64_t v)
 	}
 }
 
-#include "mtkconnsys.h"         /* Wi-Fi step 1: Android's device tree on CONNSYS, printed (uses out()) */
 
 /* ---- run state ---- */
 
@@ -422,7 +422,7 @@ static void display_find(void)
 
 	fb_base = LK_FB_BASE;
 	fb_pitch = LK_FB_PITCH;
-	if (addr >= LK_FB_BASE && addr < LK_FB_BASE + LK_FB_SIZE && pitch >= PANEL_W * 4 && pitch <= 4096) {
+	if (addr >= LK_FB_BASE && addr < LK_FB_BASE + LK_FB_SIZE && pitch >= PANEL_W * 4 && pitch <= 8192) {
 		fb_base = addr;
 		fb_pitch = pitch;
 	}
@@ -463,7 +463,7 @@ static const struct payload_header *payload_find(void)
 	uint64_t off = hdr[6]; /* res3 */
 	const struct payload_header *ph = (const struct payload_header *)((uint64_t)_start + off);
 
-	if (off == 0 || (off & 15) || ph->magic != PAYLOAD_MAGIC) {
+	if (off == 0 || (off & 15) || ph->magic != PAYLOAD_MAGIC || ph->size > BOARD_BOOT_PARTITION_SIZE) {
 		return NULL;
 	}
 	return ph;
@@ -490,7 +490,10 @@ static int parse_payload(struct payload_info *pi)
 			pi->ramdisk = p + sizeof(*e);
 			pi->ramdisk_size = e->size;
 		}
-		p += sizeof(*e) + ((e->size + 15) & ~15u);
+		if (e->size > (uint64_t)(pend - (p + sizeof(*e)))) {
+			break;          /* the entry runs past the payload */
+		}
+		p += sizeof(*e) + (((uint64_t)e->size + 15) & ~15ull);
 	}
 	return pi->kernel != NULL && ((const struct mach_header_64 *)pi->kernel)->magic == MH_MAGIC_64;
 }
@@ -994,6 +997,7 @@ static void __attribute__((noreturn)) chain_android(void)
 #if TOUCH_PROBE
 	touch_hand_back();
 #endif
+	wdt_disable();
 	out("starting Android\n");
 
 	volatile uint32_t *dst = (volatile uint32_t *)CHAIN_STUB_PA;
@@ -1454,6 +1458,9 @@ void xnu_returned(uint64_t log_pa, uint64_t len, uint64_t reason, uint64_t code,
 	dbg_puts("\n=== what the screen showed when XNU came back ===\n");
 	read_screen();
 	fbc.base = screen;
+	fbc.x = 0;
+	fbc.y = fbc.top = 0;
+	fbc.scale = BOARD_DISPLAY_SCALE;
 	fbc.fg = 0xffffff40u;
 	out("\n=== XNU returned to mtkloader: reason ");
 	out_dec(reason);
@@ -1481,9 +1488,11 @@ void xnu_returned(uint64_t log_pa, uint64_t len, uint64_t reason, uint64_t code,
 		}
 		out("\n");
 	}
-	if (reason != 1) {
+	if (reason != 1 && reason != 2) {
 		show_panic_string(&xsyms);
-		show_backtrace();
+		if (xsyms.panic_str && xnu_rd64(xsyms.panic_str)) {
+			show_backtrace();
+		}
 	}
 	out("=== XNU log (");
 	out_dec(len);
@@ -1495,8 +1504,10 @@ void xnu_returned(uint64_t log_pa, uint64_t len, uint64_t reason, uint64_t code,
 	dbg_puts("=== end of XNU log ===\n");
 	save_host_keep(&xsyms);
 	show_log_tail(40);
-	dbg_delay_ms(20000);
-	reset_board();
+	out("\n[mtkloader] Halted. Hold Vol-Down + Power to enter Fastboot.\n");
+	for (;;) {
+		__asm__ volatile("wfe");
+	}
 }
 
 /*
@@ -2130,7 +2141,7 @@ static uint8_t touch_bring_up(void)
  */
 #define APMIXED_BASE        0x1000c000ULL
 #define ARMPLL_CON1         0x20c
-/* The X6826B's 1176 at 800 mV, the Redmi's 2000 on a Helio G88: board.h. */
+/* The Redmi's 2000 MHz on a Helio G88: board.h. */
 #define BIG_MHZ             BOARD_BIG_MHZ
 
 static void big_cores_clock(void)
@@ -2180,6 +2191,19 @@ static void __attribute__((noreturn)) run_xnu(void)
 				vm_hi = sg->vmaddr + sg->vmsize;
 			}
 			uint64_t dst_pa = kva_to_pa(sg->vmaddr);
+			if (sg->filesize > sg->vmsize ||
+			    sg->fileoff > pi.kernel_size || sg->filesize > pi.kernel_size - sg->fileoff ||
+			    sg->vmaddr < KERNEL_VIRT_BASE || sg->vmsize > XNU_MEM_SIZE ||
+			    sg->vmaddr - KERNEL_VIRT_BASE > XNU_MEM_SIZE - sg->vmsize) {
+				out("ERROR: the kernel's segments do not fit the image or XNU's memory\n");
+				dbg_delay_ms(5000);
+				chain_android();
+			}
+			out(" seg ");
+			out_hex(dst_pa);
+			out(" (");
+			out_dec(sg->vmsize / 1024);
+			out(" KB)\n");
 			memset((void *)dst_pa, 0, sg->vmsize);
 			memcpy((void *)dst_pa, pi.kernel + sg->fileoff, sg->filesize);
 		} else if (lc->cmd == LC_UNIXTHREAD) {
@@ -2248,7 +2272,7 @@ static void __attribute__((noreturn)) run_xnu(void)
 	 */
 	if (s.log_putc) {
 		/* uart_putc is kprintf's way out, uart_putc_options the console's (and so userland's) */
-		const uint64_t from[2] = { 0, 0 };
+		const uint64_t from[2] = { s.uart_putc, s.uart_putc_options };
 
 		for (int i = 0; i < 2; i++) {
 			if (!from[i]) {
@@ -2426,7 +2450,12 @@ static void __attribute__((noreturn)) run_xnu(void)
 		__asm__ volatile("dc cvac, %0" : : "r"(at));
 	}
 	__asm__ volatile("dsb sy");
-	out("Jumping to XNU...\n");
+	out("Jumping to XNU: entry ");
+	out_hex(kva_to_pa(entry_va));
+	out(" ba ");
+	out_hex(ba_pa);
+	out("\n");
+	dbg_delay_ms(1500);
 	jump_to_kernel(kva_to_pa(entry_va), ba_pa);
 	__builtin_unreachable();
 }
@@ -3468,15 +3497,22 @@ void mtkloader_main(uint64_t dtb)
 	if (!boot_choice()) {
 		chain_android();
 	}
+#if XNU_WDT_SECONDS
+	uint32_t t = XNU_WDT_SECONDS > 31 ? 31 : XNU_WDT_SECONDS;
+	marker_set(MARK_RUNNING);
+	wr32(TOPRGU_LENGTH, ((t * 32768u / 512u) << 5) | 0x8u);
+	wr32(TOPRGU_RESTART, TOPRGU_RESTART_KEY);
+	wr32(TOPRGU_MODE, TOPRGU_MODE_KEY | 0x1u);
+#endif
 	fb_rect(0, 0, PANEL_W, PANEL_H, 0xff000000u);
 	fbc.x = 0;
 	fbc.y = fbc.top = 0;
+	fbc.scale = BOARD_DISPLAY_SCALE;
 	fbc.fg = 0xff40ff40u;
-	out("== mtkloader: Darwin/XNU on X6826B (MT6768) ==\n");
+	out("== mtkloader: Darwin/XNU on " BOARD_NAME " ==\n");
 	fbc.fg = 0xffffffffu;
 	out("LK dtb ");
 	out_hex(dtb);
 	out("\n");
-	connsys_dt_report(dtb);         /* Wi-Fi step 1: what Android's tree says of CONNSYS (mtkconnsys.h) */
 	run_xnu();
 }

@@ -2,7 +2,7 @@
 
 [English](README.md) · Русский
 
-HakiOS для **Infinix Hot 20 (X6826B)**: MediaTek Helio G85 (**MT6768**), GPU **Mali-G52 MC2**, eMMC.
+HakiOS для **Xiaomi Redmi 10 (selene) (X6826B)**: MediaTek Helio G85 (**MT6768**), GPU **Mali-G52 MC2**, eMMC.
 Родной userland iOS 16.5 (launchd → backboardd → SpringBoard → приложения) на открытом ядре Apple XNU
 (xnu-8796.121.2), со своим загрузчиком и драйверами этого телефона. Первый MediaTek-телефон проекта;
 всё остальное в организации — Qualcomm.
@@ -55,7 +55,7 @@ HakiOS для **Infinix Hot 20 (X6826B)**: MediaTek Helio G85 (**MT6768**), GPU 
 ## Запуск
 
 В общем дереве, ветка `mtk` (что нужно:
-- Infinix Hot 20 (X6826B) с разлоченным загрузчиком, рутованным Android (Magisk) и сохранённым штатным
+- Xiaomi Redmi 10 (selene) (X6826B) с разлоченным загрузчиком, рутованным Android (Magisk) и сохранённым штатным
   образом `boot_a` (`backup/boot_a_magisk.img` в корне дерева);
 - Mac и свой IPSW Darwin userland 16.5 (для `xnuloader/identity.h`)).
 

@@ -1,5 +1,5 @@
 /*
- * The Infinix Hot 20's Wi-Fi (X6826B, MT6768: CONNSYS with the MT6631 radio), above WMT (redwood_connsys.c, steps
+ * The Xiaomi Redmi 10 (selene)'s Wi-Fi (X6826B, MT6768: CONNSYS with the MT6631 radio), above WMT (redwood_connsys.c, steps
  * 1 to 11): what MediaTek's gen4m driver does on this chip -- wlan/core/gen4m of MiCode/MTK_kernel_modules
  * merlin-r-oss, CONNAC on AXI (chips/connac/connac.c, chips/common/cmm_asic_connac.c and fw_dl.c,
  * os/linux/hif/common/hal_pdma.c and kal_pdma.c) --, each step held against what Android does on this phone

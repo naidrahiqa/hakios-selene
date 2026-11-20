@@ -1,9 +1,8 @@
 /*
- * The controller the touch screen hangs on: SPI2 (0x11012000) on the X6826B, where the part is a
- * Synaptics/OmniVision TCM one (Android drives it as omnivision_tcm_spi, see
- * docs/touch-handover.md); SPI0 (0x1100a000) on the Redmi 10 family, where it is a Novatek part.
+ * The controller the touch screen hangs on: SPI0 (0x1100a000, "mediatek,mt6765-spi", cs 0, 9.6 MHz),
+ * where the part is a Novatek NT36672C on the Redmi 10 family. The SPI pins are 25-28 at function 2.
  * The base is the board's (board.h); everything below -- register layout, FIFO, bit clock -- is
- * the same block, and both boards wire it to pins 25-28 at function 2. Registers follow Linux's
+ * the same block. Registers follow Linux's
  * drivers/spi/spi-mt65xx.c for "mediatek,mt6765-spi", which is what the phones' device trees
  * call this controller.
  *

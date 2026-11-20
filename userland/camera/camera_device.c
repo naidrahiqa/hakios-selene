@@ -22,7 +22,7 @@
  * Everything asked of the device and the stream that is not answered here is said in mediaserverd's
  * log ("redwood: camera: ..."), once per property.
  *
- * STATE (7 November, the Infinix X6826B, docs/camera-x6826b.md): Camera.app's viewfinder shows this camera's frames. What the capture graph needed beyond the
+ * STATE (7 November, the Redmi X6826B, docs/camera-x6826b.md): Camera.app's viewfinder shows this camera's frames. What the capture graph needed beyond the
  * obvious: tccd running (the camera permission), a processing session (device slot 1: device_processing_session_create), the stream's ModuleInfo (the sensor ID
  * and module IDs that find the sensor's tuning in D22/CameraSetup.plist), VideoOutputsColorInfo, no picture before the graph has enabled the outputs / called
  * Start, and the pictures made in each output's own BufferPool (VideoOutputConfigurations). Not done: autofocus, stills (the shutter), recording, the other cameras.

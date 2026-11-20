@@ -386,7 +386,7 @@ redwood_novatek_init(void)
 
 	/*
 	 * touchscreen=3: Redmi 10 family (selene) Novatek NT36672C.
-	 * (touchscreen=2 is Infinix Hot 20 TD4160; touchscreen=1 is Goodix).
+	 * (touchscreen=2 is Xiaomi Redmi 10 (selene) TD4160; touchscreen=1 is Goodix).
 	 */
 	if (!PE_parse_boot_argn("touchscreen", &which, sizeof(which)) || which != 3) {
 		return;

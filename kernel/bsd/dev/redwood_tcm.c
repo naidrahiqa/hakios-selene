@@ -1,5 +1,5 @@
 /*
- * The touch screen of the Infinix Hot 20 (X6826B): an OmniVision TD4160 on SPI2 of the MT6768,
+ * The touch screen of the Xiaomi Redmi 10 (selene) (X6826B): an OmniVision TD4160 on SPI2 of the MT6768,
  * as a source of touches for /dev/redwood-touch (sys/redwood_input.h). Only with boot-arg
  * touchscreen=2: every address below belongs to this phone.
  *

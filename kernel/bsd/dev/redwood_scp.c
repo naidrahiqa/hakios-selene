@@ -1,5 +1,5 @@
 /*
- * The SCP of the Infinix Hot 20's MT6768: the Cortex-M co-processor ("tinysys") whose firmware is the
+ * The SCP of the Xiaomi Redmi 10 (selene)'s MT6768: the Cortex-M co-processor ("tinysys") whose firmware is the
  * sensor hub -- the accelerometer, gyroscope, light and proximity sensors are behind it, not on an
  * I2C bus of the application processor (docs/sensors-x6826b.md, run 276). Step 1, reading only:
  * whether it runs when XNU starts. Android's kernel does not load its firmware (no request_firmware

@@ -1,4 +1,4 @@
-# Sensors on the Infinix (X6826B): what the device tree says
+# Sensors on the Redmi (X6826B): what the device tree says
 
 Run 276 (27 October 2026), mtkloader's report of the tree LK hands over (mtkloader/mtkconnsys.h,
 nodes whose name or compatible says sensor/accel/gsensor/gyro/alsps/magnet/scp):

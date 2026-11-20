@@ -1,4 +1,4 @@
-# Bluetooth на Infinix Hot 20 (X6826B, MT6768, MT6631): от контроллера до `bluetoothd` iOS 16.5
+# Bluetooth на Xiaomi Redmi 10 (selene) (X6826B, MT6768, MT6631): от контроллера до `bluetoothd` iOS 16.5
 
 Пути `userland/...`, `runkit/...` и файлы ядра `redwood_net.c`, `redwood_input.c` здесь — общего репозитория (hakios-xnu-kernel, ветка `mtk`); драйверы этого телефона лежат в `../kernel/`. Имена чужих устройств из эфира убраны.
 

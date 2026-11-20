@@ -1,5 +1,5 @@
 /*
- * (bsd/dev/sys/redwood_wpa.h: wifi/lx/src/lx_wpa.h as it is, built into the kernel for the Infinix's radio
+ * (bsd/dev/sys/redwood_wpa.h: wifi/lx/src/lx_wpa.h as it is, built into the kernel for the Redmi's radio
  * (redwood_mtkwifi.c), whose firmware leaves the handshake to the host. The tests are that file's: tools/wpa-test.)
  */
 /*

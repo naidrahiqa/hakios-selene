@@ -1,5 +1,5 @@
 /*
- * The main camera of the Infinix Hot 20 (X6826B, MT6768): a Samsung S5K JN1 (chip ID 0x38e1) on I2C4's pins,
+ * The main camera of the Xiaomi Redmi 10 (selene) (X6826B, MT6768): a Samsung S5K JN1 (chip ID 0x38e1) on I2C4's pins,
  * its MIPI CSI-2 received by SENINF and written to memory by CAMSV_1. The sequence is the one mtkloader
  * proved (mtkloader/mtkcam.h, docs/camera-x6826b.md) -- the same registers in the same order, only the way
  * to reach them differs (ml_io_map windows instead of the loader's identity map):

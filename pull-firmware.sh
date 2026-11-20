@@ -1,5 +1,5 @@
 #!/bin/bash
-# The Infinix Hot 20's firmware, out of YOUR phone's Android, into fw-*/ (at the top of the HakiOS tree, or next to this repository's mtkloader/)
+# The Xiaomi Redmi 10 (selene)'s firmware, out of YOUR phone's Android, into fw-*/ (at the top of the HakiOS tree, or next to this repository's mtkloader/)
 # (git ignores them: they are the vendor's, and nothing of the vendor's is in the repository).
 #
 #   fw-touch/hdl_firmware.img   the touch controller's (OmniVision TD4160): the loader carries it
