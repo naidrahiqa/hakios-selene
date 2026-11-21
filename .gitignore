@@ -31,3 +31,7 @@ mtkloader/*.img
 __pycache__/
 .DS_Store
 xnuloader
+
+# Local-only notes: agent instructions and the working audit log stay on this machine.
+/AGENTS.md
+/docs/mtkloader-audit.md
