@@ -129,9 +129,10 @@ if the active slot is B, `boot_a` is not used until the slot changes.
   Do not flash again without one of these changes proven in source.
 
 
-## Stock kernel base switched to bakasu LTO build (21 Nov, end of session)
+## Stock kernel base switched to owner's bakasu LTO build (21 Nov, end of session)
 
-- New stock boot image chosen by the owner:
+- New stock boot image built by the owner for stock ColorOS (this is the daily-driver
+  stock kernel, not just a backup):
   `/home/naidra/Projects/Kernel/boot-images/vendor-s-4.14/boot_bakasu_lto_20261121.img`
   (64 MiB, Android header v2, page 2048, kernel 13,221,198 B, ramdisk 34,568,566 B).
   This replaces the earlier ColorOS16 backup as the Android side of chainboot images.
@@ -139,5 +140,6 @@ if the active slot is B, `boot_a` is not used until the slot changes.
   LITTLE1 loader (cpus=1, pmsg log, warm reset) and `build-payload-NEWKERNEL.bin`:
   53,573,632 bytes (< 64 MiB boot_a), sha256
   c66ccb813247ede232333e173b371690db367d163878f5ff6ec3fb9270400d26.
-- Not flashed in this step (the phone is back on the ColorOS16 stock image); it is ready
-  for the next run. The restore path is the bakasu image above, not the ColorOS16 one.
+- The owner's bakasu image is the restore/stock image going forward; the earlier
+  ColorOS16 boot backup is only the fall-back. The chainboot image above is ready for
+  the next XNU run.
