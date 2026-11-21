@@ -84,3 +84,28 @@ fastboot -s 65cb03c00702 reboot
 Do **not** run `fastboot flashing unlock` (wipes `userdata`), `-w`, `erase`, or flash
 anything except `boot_a`. Check `fastboot -s 65cb03c00702 getvar current-slot` first:
 if the active slot is B, `boot_a` is not used until the slot changes.
+
+
+## Kernel rebuild and flash-root progress (21 November 2026, evening)
+
+- Installed the full XNU toolchain (TheOS cctools ld64-609, iPhoneOS16.5 SDK via theos/sdks)
+  and ran `xnu-deps/setup.sh --stage1` and `--stage2` successfully.
+- `xnu/apply.sh` fetched xnu-8796.121.2 and applied `redwood.patch` (77 changed, 126 new files).
+- `./xnu-build.sh -j8 -k` built a NEW kernel (`mach.development.bcm2837`, 15,082,000 B).
+  Unlike the old `prebuilt/mach.development.bcm2837`, it contains the `emmc_root` hook:
+  strings `emmc: xnusys`, `xnusys partition could not`, `redwood_emmc_root` are present.
+  The old prebuilt had none of them (backed up to `prebuilt/mach.development.bcm2837.orig`).
+- Boot image `xnu-selene-boot_a-NEWKERNEL2.img` (51,992,576 B) with the new kernel, LITTLE1
+  loader (cpus=1, pmsg log, warm reset) was flashed and run. Log
+  `hakios-xnu-kernel-selene/logs/newkernel2-20261121-1818.log` (65 KB pmsg) confirms:
+  `emmc: xnusys at block 235765760, 2361 MB of 4096 MB in its APFS containers`,
+  `emmc: 4 MB in 256 ms`, `BSD root: emmc0, major 2, minor 0` — the phone's xnusys
+  partition became the root for the first time.
+- `FLASHBOOT=1 bash userland/build.sh` built `flashboot.apfs` (975 MB, 3 APFS containers,
+  dyld cache present) — too large for the chainboot payload; the documented phone path is
+  `emmc_root=1` with the small root.apfs as md1 (docs/x6826b-emmc.md).
+- Remaining gap: with `emmc_root=1` alone, `init` does not call `flash_root()`, so the OS
+  cryptex is not mounted (`/System/Cryptexes/OS` missing) and dyld cannot load
+  `/usr/lib/libSystem.B.dylib`. Adding `root_apfs=` would take the flash-root path, but
+  that path expects a `flashboot` payload and a device node not verified on this phone.
+  Do not combine the two paths without a phone run to confirm.
