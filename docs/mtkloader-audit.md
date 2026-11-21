@@ -109,3 +109,21 @@ if the active slot is B, `boot_a` is not used until the slot changes.
   `/usr/lib/libSystem.B.dylib`. Adding `root_apfs=` would take the flash-root path, but
   that path expects a `flashboot` payload and a device node not verified on this phone.
   Do not combine the two paths without a phone run to confirm.
+
+
+## Final result of the root_apfs experiment (21 Nov, late)
+
+- Boot image with `root_apfs=ufs_darwin` added to the cmdline was flashed and run.
+  Log `hakios-xnu-kernel-selene/logs/rootapfs-20261121-1828.log` shows the check count
+  rose from 22 to 36 (the extra checks are from the flash-root path), but dyld STILL
+  reports `libSystem.B.dylib` not found in `/System/Cryptexes/OS`.
+- `root_apfs=ufs_darwin` is a QEMU/stage0 device name; on this phone the root device is
+  `/dev/emmc0`. Passing it likely made `flash_root()` mount the wrong node, so the OS
+  cryptex was never mounted and no userland handoff happened.
+- CONCLUSION: the two documented paths must not be mixed. For this phone, the correct
+  combination is not yet established: `emmc_root=1` + small payload gives the kernel a
+  working root but no cryptex; `root_apfs=` expects a flashboot payload that is too big
+  for the 64 MB `boot_a`. Further work needs either (a) a cryptex container written to
+  xnusys next to system.apfs and a `root_apfs=/dev/emmc0`-style path verified on the
+  phone, or (b) a thin stage0 in the small payload that mounts the cryptex from xnusys.
+  Do not flash again without one of these changes proven in source.
